@@ -9,6 +9,8 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <string>
+#include <stack>
 
 using namespace std;
 
@@ -22,7 +24,7 @@ vector<string> lexemes;
 vector<string> tokens;
 vector<string>::iterator lexitr;
 vector<string>::iterator tokitr;
-map<string, int> vartable; 	// map of variables and their values
+map<string, int> vartable; 	// map of variables and their values- x=5
 vector<Stmt *> insttable; 		// table of instructions
 map<string, string> symboltable; // map of variables to datatype (i.e. sum t_integer)
 
@@ -150,15 +152,21 @@ private:
 	vector<Expr *> exprs;
 	vector<string> ops;  // tokens of operators
 public:
+	InFixExpr();
+	//populates infix expression in a default way
+	InFixExpr(vector<int> nums, vector<string> opers);
+	//populate infix expression with values
 	~InFixExpr();
+	//might want overload for boolean expressions
+	bool eval();
 	int eval();
 	string toString();
 };
 
 class Compiler{
 private:
-	void buildIf();
-	void buildWhile();
+	IfStmt buildIf();
+	WhileStmt* buildWhile();
 	void buildStmt();
 	void buildAssign();
 	void buildInput();
@@ -174,26 +182,116 @@ public:
 	}
 	bool compile();  	// builds the instruction table and declaration check
 	void run();  		// executes the instruction table
+
 };
 
-//Michaela wrote the following methods
+//Michaela wrote the following methods for the WhileStmt Class
 void WhileStmt::WhileStmt(){
-	cout << "Constructing a WhileStmt object" << endl;
+	cout << "Default constructing a WhileStmt object" << endl;
 	name = "t_while";
+	//What do the parameters look like coming in?
 	p_expr = new InFixExpr();
 	elsetarget = -1;
 	//when compiling, the program will use a stack to determine which end loop belongs to this and change elsetarget to the next instruction
 }
 
-void WhileStmt::~WhileStmt(){
-	cout << "Destructing WhileStmt object" << endl;
-	p_expr = nullptr;
+void WhileStmt::WhileStmt(vector<int> exprs, vector<string> opers, int go2){
+	//object instntiated with its instruction number as the elsetarget variable so it is easy for go_to to access the instruction number it needs
+	cout << "3-arg constructing a WhileStmt object" << endl;
+	name = "t_while";
+	//What do the parameters look like coming in?
+	p_expr = new InFixExpr(exprs, opers);
+	elsetarget = go2;
+	//when compiling, the program will use a stack to determine which end loop belongs to this and change elsetarget to the next instruction
 }
 
+//check against class code
+WhileStmt::~WhileStmt(){
+	cout << "Destructing WhileStmt object" << endl;
+	delete(p_expr);
+}
 
+string WhileStmt::toString(){
+	cout << "Converting WhileStmt to string" << endl;
+	return name + " " + p_expr->toString() + " " + elsetarget;
+}
 
+void WhileStmt::setTarget(int x){
+	cout << "Setting elsetarget in WhileStmt" << endl;
+	elsetarget = x;
+}
 
+void WhileStmt::execute(){
+	//assumes that pc is incremented in eval
+	cout << "Executing WhileStmt" << endl;
+	while (p_expr->eval()){
+		while (pc<elsetarget){
+			insttable[pc]->execute();
+			pc ++;
+		}
+	}
+	pc = elsetarget;
+}
 
+Compiler::Compiler(istream& source, istream& symbols){
+	//populate vectors
+}
+
+bool Compiler::compile(){
+	stack <WhileStmt> open_loops;
+	while (*tokitr!=tokens.end()){
+		if (*tokitr=="t_while"){
+			tokitr++; lexitr++;
+			//what to do to push a pointer?
+			insttable.push_back(buildWhile());
+			//built without exit line - elsetarget is the index of the whilestmt
+			//nvalid arguments 'Candidates are:void push(const WhileStmt &)void push(WhileStmt &&)
+			open_loops.push(insttable[insttable.size()-1]);
+		}
+		if (*tokitr=="t_end"){
+			tokitr++; lexitr++;
+			if (*tokitr=="t_loop"){
+
+			}
+		}
+		//read in statements, add to insttable
+		//when end loop is found, add to insttable, inc ctr, pop while loop off of stack, and set elsetarget to ctr
+		else if (*tokitr=="t_if"){
+			insttable.push_back(buildIf());
+		}
+		else if (*tokitr=="t")
+		tokitr++; lexitr++;
+	}
+}
+
+WhileStmt* Compiler::buildWhile(){
+	//iterate token and lexeme map to get past the parentheses
+	tokitr++; lexitr++;
+	vector<int> exprs;
+	vector<string> ops;
+	if (*tokitr=="t_id"){
+		exprs.push_back(vartable[*tokitr]);
+	}
+	else{
+		exprs.push_back(stoi(*lexitr));
+	}
+	tokitr++; lexitr++;
+	ops.push_back(*tokitr);
+	tokitr++; lexitr++;
+	if (*tokitr=="t_id"){
+		exprs.push_back(vartable[*tokitr]);
+	}
+	else{
+		exprs.push_back(stoi(*lexitr));
+	}
+	//increment past the already-read lexeme
+	//increment past the rparen
+	//increment past the loop
+	//iterators should be at the start of the next line
+	tokitr = tokitr + 3; lexitr = lexitr + 3;
+	//Symbol WhileStmt could not be resolved- why?
+	return new WhileStmt (exprs, ops, insttable.size());
+}
 
 int main() {
 	cout << "Arugula" << endl; // prints Arugula
