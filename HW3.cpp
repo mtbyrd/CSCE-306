@@ -1,8 +1,8 @@
 //============================================================================
 // Name        : HW3.cpp
-// Author      : Michaela Byrd
+// Author      : Tim and Michaela
 // Version     :
-// Copyright   : Description:
+// Copyright   : Your copyright notice
 // Description : Hello World in C++, Ansi-style
 //============================================================================
 
@@ -64,7 +64,7 @@ class InputStmt : public Stmt{
 private:
 	string var;
 public:
-	InputStmt();
+	InputStmt(string vname);
 	~InputStmt();
 	string toString();
 	void execute();
@@ -106,6 +106,7 @@ private:
 	//The line to go to after the condition fails
 	int elsetarget;
 public:
+	WhileStmt(vector<int> exprs, vector<string> opers, int go2);
 	WhileStmt();
 	~WhileStmt();
 	string toString();
@@ -158,8 +159,8 @@ public:
 	//populate infix expression with values
 	~InFixExpr();
 	//might want overload for boolean expressions
-	bool eval();
-	int eval();
+	//bool eval();
+	//int eval();
 	string toString();
 };
 
@@ -186,7 +187,7 @@ public:
 };
 
 //Michaela wrote the following methods for the WhileStmt Class
-void WhileStmt::WhileStmt(){
+WhileStmt::WhileStmt(){
 	cout << "Default constructing a WhileStmt object" << endl;
 	name = "t_while";
 	//What do the parameters look like coming in?
@@ -237,8 +238,9 @@ Compiler::Compiler(istream& source, istream& symbols){
 	//populate vectors
 }
 
+//Michaela wrote the method compile
 bool Compiler::compile(){
-	stack <WhileStmt> open_loops;
+	stack <WhileStmt*> open_loops;
 	while (*tokitr!=tokens.end()){
 		if (*tokitr=="t_while"){
 			tokitr++; lexitr++;
@@ -246,12 +248,13 @@ bool Compiler::compile(){
 			insttable.push_back(buildWhile());
 			//built without exit line - elsetarget is the index of the whilestmt
 			//nvalid arguments 'Candidates are:void push(const WhileStmt &)void push(WhileStmt &&)
+			//Push pointer to while object onto stack
 			open_loops.push(insttable[insttable.size()-1]);
 		}
 		if (*tokitr=="t_end"){
 			tokitr++; lexitr++;
 			if (*tokitr=="t_loop"){
-
+				insttable.push_back(new GoTo(open_loops.pop()));
 			}
 		}
 		//read in statements, add to insttable
@@ -293,7 +296,45 @@ WhileStmt* Compiler::buildWhile(){
 	return new WhileStmt (exprs, ops, insttable.size());
 }
 
+
+
+
+
+
+
+//Michaela wrote the following methods for InputStmt
+//Planning to write compile to pass the appropriate information to InputStmt
+InputStmt::InputStmt(string vname){
+	name = "t_input";
+	var = vname;
+}
+//Delete nothing?
+InputStmt::~InputStmt(){}
+
+string InputStmt::toString(){
+	return name + " " + var + " " + vartable[var];
+}
+
+void InputStmt::execute(){
+	//Determine data type?
+	//Do I need to call assignment stmt?
+	string val;
+	cout << "Enter a value for " << var << endl;
+	cin >> val;
+	vartable [var] = val;
+}
+
 int main() {
 	cout << "Arugula" << endl; // prints Arugula
 	return 0;
+}
+
+
+
+
+
+
+IdExpr::IdExpr(string s){
+
+
 }
