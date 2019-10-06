@@ -179,7 +179,7 @@ private:
 	int gotoline;
 public:
 	GoToStmt(int x){
-		//pre: constructs a statement that instructs program to go to a certain instruction. Parameter is the index of that instrucion in insttable
+		//pre: constructs a statement that instructs program to go to a certain instruction. Parameter is the index of that instruction in insttable
 		//post: object is created
 		cout << "Constructing a GoToStmt" << endl;
 		Stmt::setName("t_end");
@@ -222,9 +222,15 @@ class IdExpr : public Expr{
 private:
 	string id;
 public:
-	IdExpr(string s);
-	int eval();
-	string toString();
+	IdExpr(string s){
+		id = s;
+	}
+	int eval(){
+		return vartable[id];
+	}
+	string toString(){
+		return "Data Type: " + symboltable[id] + " ID: " + id + " Value: " + vartable[id];
+	}
 };
 
 class InFixExpr : public Expr{
@@ -232,6 +238,7 @@ private:
 	vector<Expr *> exprs;
 	vector<string> ops;  // tokens of operators
 public:
+	InFixExpr(vector<Expr *> exprs, vector<string> ops);
 	~InFixExpr();
 	int eval();
 	string toString();
@@ -240,32 +247,35 @@ public:
 class Compiler{
 private:
 	IfStmt* buildIf();
+	//handle
 	WhileStmt* buildWhile();
+	//handle
 	Stmt* buildStmt();
 	AssignStmt* buildAssign();
+	//handle
 	InputStmt* buildInput();
+	//handle
 	Stmt* buildOutput();
-	// use one of the following buildExpr methods
-	void buildExpr(Expr*&);
+
 	Expr* buildExpr(){
-		//Assumes that iterators are pointing directly to the start of an expression
-		vector <int> nums;
+		//Assumes that iterators are pointing directly to the start of an expression-inside any parens
+		vector <Expr*> exprs;
 		vector <string> ops;
 		while (*tokitr!="s_rparen" && *tokitr!="s_semi"){
 			//Analyzing a new lexeme
-			string num = "";
-			string str = *lexitr;
-			std::string::const_iterator stritr = str.begin();
-			if (isdigit(*stritr)){
-				while (isdigit(*stritr)){
-					//construct the first number
-					num += *stritr;
-					stritr++;
-				}
-				nums.push_back(stoi(num));
+			if (*tokitr=="t_id"){
+				exprs.push_back(new IdExpr(*lexitr));
 			}
-			else {
+			else if (*tokitr=="t_number" || *tokitr=="t_true" || *tokitr=="t_false"){ //bool
+				exprs.push_back(new ConstExpr(*lexitr));
+			}
+			else{
+				//If the token/lexeme indicates an operator
 				ops.push_back(*lexitr);
+				InFixExpr* temp = new InFixExpr(exprs, ops);
+				exprs.clear();
+				ops.clear();
+				exprs.push_back(temp);
 			}
 			tokitr++; lexitr++;
 		}
