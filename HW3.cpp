@@ -40,20 +40,41 @@ void dump(); 				// prints vartable, instable, symboltable
 // It is assumed some methods in statement and expression objects will change and
 // you may need to add a few new ones.
 
+class Expr{ // expressions are evaluated!
+public:
+	virtual int eval(){
+		return -1;
+	}
+	virtual string toString(){
+		return "Error";
+	}
+	virtual ~Expr(){}
+};
+
+
+
 class Stmt{ // statements are executed!
 private:
 	string name;
 public:
-	Stmt(){}
+	Stmt(string n){
+		cout << "Constructing a Stmt object" << endl;
+		name = n;
+	}
+	Stmt(Expr* e){}
+	Stmt(int x){}
 	virtual ~Stmt(){};
+
 	virtual string toString() = 0;
 	virtual void execute() = 0;
 	string getName (){
 	//pre:
 	//post: name member variable is returned
+		cout << "Getting Stmt name" << endl;
 		return name;
 	}
 	void setName (string s){
+		cout << "Setting Stmt name" << endl;
 	//pre: the parameter is the name member variable
 	//post: name has been set to s
 		name = s;
@@ -70,14 +91,14 @@ public:
 	string toString();
 	void execute();
 };
-
+//Michaela wrote the InputStmt class
 class InputStmt : public Stmt{
 private:
 	string var;
 public:
-	InputStmt(string vname){
+	InputStmt(string vname)
+		:Stmt("t_input"){
 		cout << "Constructing an InputStmt object" << endl;
-		Stmt::setName("t_input");
 		var = vname;
 	}
 	~InputStmt();
@@ -85,11 +106,23 @@ public:
 		return "Name: " + Stmt::getName() + " Variable Name: " + var;
 	}
 	void execute(){
+		cout << "Executing InputStmt" << endl;
 		string val;
 		//Assuming I don't need to do anything else specific for this
-		cout << "Enter value for of type " << symboltable[var]<< "for: " << var << endl;
+		cout << "Enter value for of type " << symboltable[var]<< " for: " << var << endl;
 		cin >> val;
-		vartable[var] = val;
+		if (symboltable[var]=="t_boolean"){
+			if (val=="false" || val == "0"){
+				vartable[var] = 0;
+			}
+			else {
+				vartable[var] = 1;
+			}
+		}
+		else{
+			vartable[var] = stoi(val);
+		}
+		pc++;
 	}
 };
 class StrOutStmt : public Stmt{
@@ -101,12 +134,13 @@ public:
 	string toString();
 	void execute();
 };
-
+//Michaela wrote the ExprOutStmt class
 class ExprOutStmt : public Stmt{
 private:
 	Expr* p_expr;
 public:
-	ExprOutStmt(Expr* e){
+	ExprOutStmt(Expr* e)
+	:Stmt("t_output"){
 		cout << "Constructing ExprOutStmt" << endl;
 		p_expr = e;
 	}
@@ -116,11 +150,12 @@ public:
 	}
 	string toString(){
 		cout << "COnverting ExprOutStmt to string" << endl;
-		return "Name: " + Stmt::getName() + " Expression: " + p_expr;
+		return "Name: " + Stmt::getName() + " Expression: " + p_expr->toString();
 	}
 	void execute(){
 		cout << "Executing ExprOutStmt" << endl;
 		cout << p_expr->eval() << endl;
+		pc++;
 	}
 };
 
@@ -135,15 +170,15 @@ public:
 	string toString();
 	void execute();
 };
-
+//Michaela wrote the WhileStmt class
 class WhileStmt : public Stmt{
 private:
 	Expr* p_expr;
 	int elsetarget;
 public:
-	WhileStmt(Expr* e){
+	WhileStmt(Expr* e)
+	:Stmt("t_while"){
 		cout << "Constructing a WhileStmt object" << endl;
-		Stmt::setName("t_while");
 		p_expr = e;
 		elsetarget = -1;
 	}
@@ -153,7 +188,7 @@ public:
 	}
 	string toString(){
 		cout << "Converting a WhileStmt object to string" << endl;
-		return "Name: " + Stmt::getName() + " Condition: " + p_expr + " Target: " + elsetarget;
+		return "Name: " + Stmt::getName() + " Condition: " + p_expr->toString() + " Target: " + to_string(elsetarget);
 	}
 	void setTarget(int x){
 	//pre: The parameter is the index of the next instruction to execute after the while loop fails its condition.
@@ -173,22 +208,23 @@ public:
 		}
 	}
 };
-
+//Michaela wrote the GoToStmt class
 class GoToStmt : public Stmt{
 private:
 	int gotoline;
 public:
-	GoToStmt(int x){
+	GoToStmt(int x)
+	:Stmt("t_end"){
 		//pre: constructs a statement that instructs program to go to a certain instruction. Parameter is the index of that instruction in insttable
 		//post: object is created
 		cout << "Constructing a GoToStmt" << endl;
-		Stmt::setName("t_end");
 		gotoline = x;
 	}
 	~GoToStmt(){cout << "Deconstructing a GoToStmt" << endl;}
 	string toString (){
 		cout << "Converting a GoToStmt to string" << endl;
-		return "Name: " + Stmt::getName() + " Going to: " + gotoline;
+		//Eclipse will allow concatenation with an int- Tim's compiler does not like it
+		return "Name: " + Stmt::getName() + " Going to: " + to_string(gotoline);
 	}
 	void execute (){
 		cout << "Executing a GoToStmt" << endl;
@@ -197,12 +233,6 @@ public:
 };
 
 
-class Expr{ // expressions are evaluated!
-public:
-	virtual int eval() = 0;
-	virtual string toString() = 0;
-	virtual ~Expr(){}
-};
 
 
 
@@ -223,13 +253,16 @@ private:
 	string id;
 public:
 	IdExpr(string s){
+		cout << "Constructing IdExpr object" << endl;
 		id = s;
 	}
 	int eval(){
+		cout << "Evaluating IdExpr object" << endl;
 		return vartable[id];
 	}
 	string toString(){
-		return "Data Type: " + symboltable[id] + " ID: " + id + " Value: " + vartable[id];
+		cout << "Converting IdExpr object to string" << endl;
+		return "Data Type: " + symboltable[id] + " ID: " + id + " Value: " + to_string(vartable[id]);
 	}
 };
 
@@ -247,17 +280,37 @@ public:
 class Compiler{
 private:
 	IfStmt* buildIf();
-	//handle
-	WhileStmt* buildWhile();
-	//handle
-	Stmt* buildStmt();
+	//Michaela wrote buildWhile
+	WhileStmt* buildWhile(){
+		cout << "Building while" << endl;
+		Expr* condition = buildExpr();
+		tokitr++; lexitr++;
+		//Incremented to "t_loop" so further statements can be read
+		return new WhileStmt(condition);
+	}
+	//Stmt* buildStmt(); -- Not used
 	AssignStmt* buildAssign();
-	//handle
-	InputStmt* buildInput();
-	//handle
-	Stmt* buildOutput();
-
+	//Michaela wrote buildInput
+	InputStmt* buildInput(){
+		cout << "Building input" << endl;
+		string id = *lexitr;
+		tokitr++; lexitr++;
+		//incremented to closing paren so next instruction can be read
+		return new InputStmt (id);
+	}
+	//Michaela wrote buildOutput
+	Stmt* buildOutput(){
+		cout << "Building output" << endl;
+		if (*tokitr=="t_string"){
+			return new StrOutStmt ();
+		}
+		else{
+			return new ExprOutStmt(buildExpr());
+		}
+	}
+	//Michaela wrote buildExpr
 	Expr* buildExpr(){
+		cout << "Building expression" << endl;
 		//Assumes that iterators are pointing directly to the start of an expression-inside any parens
 		vector <Expr*> exprs;
 		vector <string> ops;
@@ -267,19 +320,23 @@ private:
 				exprs.push_back(new IdExpr(*lexitr));
 			}
 			else if (*tokitr=="t_number" || *tokitr=="t_true" || *tokitr=="t_false"){ //bool
-				exprs.push_back(new ConstExpr(*lexitr));
+				exprs.push_back(new ConstExpr(stoi(*lexitr)));
 			}
-			else{
-				//If the token/lexeme indicates an operator
+			else if (*tokitr=="s_plus" || *tokitr=="s_minus" || *tokitr=="s_mult" || *tokitr=="s_div" || *tokitr=="s_mod" || *tokitr=="t_and" || *tokitr=="t_or"){
+				//If the token/lexeme indicates an aritmetic operator
 				ops.push_back(*lexitr);
+			}
+			else {
+				//once a relop is reached, an infix expression is created
 				InFixExpr* temp = new InFixExpr(exprs, ops);
 				exprs.clear();
 				ops.clear();
 				exprs.push_back(temp);
+				ops.push_back(*lexitr);
 			}
 			tokitr++; lexitr++;
 		}
-
+		return new InFixExpr(exprs, ops);;
 	}
 	void populateTokenLexemes(istream& infile);
 	void populateSymbolTable(istream& infile);
@@ -289,11 +346,15 @@ public:
 		populateSymbolTable(symbols);
 	}
 	bool compile(){
+		cout << "Compiling program" << endl;
 		// builds the instruction table and declaration check
 		stack <int> open_stmts;
-		while (*tokitr!=tokens.end()){
+		tokitr = tokens.begin();
+		lexitr = lexemes.begin();
+		while (tokitr!=tokens.end()){
 			if (*tokitr=="t_while"){
 				tokitr++; lexitr++;
+				//Increments pointers to the start of the expression
 				open_stmts.push(insttable.size());
 				insttable.push_back(buildWhile());
 			}
@@ -308,17 +369,22 @@ public:
 			}
 			else if (*tokitr=="t_input"){
 				tokitr++; lexitr++;
+				tokitr++; lexitr++;
+				//Incremented to where the id is
 				insttable.push_back(buildInput());
 				//this is incremented to the start of the parens
 			}
 			else if (*tokitr=="t_output"){
 				tokitr++; lexitr++;
+				tokitr++; lexitr++;
+				//Incremented to expression or string
 				insttable.push_back(buildOutput());
 			}
 			//safe to assume that the final t_end is going to be tokens.end?
 			else if (*tokitr=="t_end"){
 				tokitr++; lexitr++;
-				int line = open_stmts.pop();
+				int line = open_stmts.top();
+				open_stmts.pop();
 				if (*tokitr=="t_loop"){
 					WhileStmt* ws = dynamic_cast<WhileStmt*>(insttable[line]);
 					if (ws!=nullptr){
@@ -338,6 +404,7 @@ public:
 				//incremented to start of new instructions
 			}
 		}
+		return true;
 	}
 	void run();  		// executes the instruction table
 };
