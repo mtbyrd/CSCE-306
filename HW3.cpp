@@ -13,7 +13,6 @@
 #include <map>
 #include <string>
 #include <stack>
-#include <string>
 #include <cmath>
 
 using namespace std;
@@ -71,7 +70,6 @@ class Stmt{ // statements are executed!
 private:
     string name;
 public:
-    Stmt(){}
     Stmt(string n){
         //cout << "Constructing a Stmt object" << endl;
         name = n;
@@ -85,11 +83,9 @@ public:
     string getName (){
         //pre:
         //post: name member variable is returned
-        //cout << "Getting Stmt name" << endl;
         return name;
     }
     void setName (string s){
-       // cout << "Setting Stmt name" << endl;
         //pre: the parameter is the name member variable
         //post: name has been set to s
         name = s;
@@ -120,7 +116,7 @@ AssignStmt::AssignStmt(string vname, Expr *expr)
 }
 
 AssignStmt::~AssignStmt() {
-    //cout << "in AssignStmt destructor" << endl;
+    cout << "in AssignStmt destructor" << endl;
     if (p_expr != nullptr)
         delete p_expr;
 }
@@ -143,17 +139,16 @@ private:
     string var;
 public:
     InputStmt(string vname)
-            :Stmt(){
-    	Stmt::setName("t_inpput");
+            :Stmt("t_input"){
         //cout << "Constructing an InputStmt object" << endl;
         var = vname;
     }
-    ~InputStmt(){}
+    ~InputStmt(){};
     string toString(){
         return "Name: " + Stmt::getName() + " Variable Name: " + var;
     }
     void execute(){
-       // cout << "Executing InputStmt" << endl;
+        //cout << "Executing InputStmt" << endl;
         string val;
         //Assuming I don't need to do anything else specific for this
         cout << "Enter value for of type " << symboltable[var]<< " for: " << var << endl;
@@ -211,7 +206,7 @@ public:
         p_expr = e;
     }
     ~ExprOutStmt(){
-       // cout << "Deconstructing ExprOutStmt" << endl;
+        cout << "Deconstructing ExprOutStmt" << endl;
         if(p_expr != nullptr)
             delete (p_expr);
     }
@@ -323,14 +318,14 @@ public:
         //cout << "Constructing a GoToStmt" << endl;
         gotoline = x;
     }
-    ~GoToStmt(){}
+    ~GoToStmt(){cout << "Deconstructing a GoToStmt" << endl;}
     string toString (){
         //cout << "Converting a GoToStmt to string" << endl;
         //Eclipse will allow concatenation with an int- Tim's compiler does not like it
         return "Name: " + Stmt::getName() + " Going to: " + to_string(gotoline);
     }
     void execute (){
-       // cout << "Executing a GoToStmt" << endl;
+        //cout << "Executing a GoToStmt" << endl;
         pc = gotoline;
     }
 };
@@ -348,7 +343,7 @@ public:
 };
 
 ConstExpr::ConstExpr(int val) {
-   // cout << "In  ConstExpr conversion constructor" << endl;
+    //cout << "In  ConstExpr conversion constructor" << endl;
     value = val;
 }
 
@@ -366,15 +361,15 @@ private:
     string id;
 public:
     IdExpr(string s){
-       // cout << "Constructing IdExpr object" << endl;
+        //cout << "Constructing IdExpr object" << endl;
         id = s;
     }
     int eval(){
-       // cout << "Evaluating IdExpr object" << endl;
+        //cout << "Evaluating IdExpr object" << endl;
         return vartable[id];
     }
     string toString(){
-       // cout << "Converting IdExpr object to string" << endl;
+        //cout << "Converting IdExpr object to string" << endl;
         return "Data Type: " + symboltable[id] + " ID: " + id + " Value: " + to_string(vartable[id]);
     }
 };
@@ -390,7 +385,7 @@ public:
     };
 
     ~InFixExpr() {
-       // cout << "In InFixExpr destructor" << endl;
+        //cout << "In InFixExpr destructor" << endl;
         exprs.clear();
     };
 
@@ -422,24 +417,20 @@ int InFixExpr::eval() {
             } else if (ops[i] == "%") {
                 infix += ops[i] + to_string(exprs[i + 1]->eval());
             }else{
-                //condition = true;
-                //cout << "I should be here " << endl;
                 if(i == 0)
                     value = exprs[i]->eval();
                 else
                     value = evaluatePostfixExpression(convertInfixToPostfix(infix));
-                //cout << value << " in eval()" << endl;
                 return compareAndRelate( value, i);
             }
         }
-        cout << infix << endl;
+        //cout << infix << endl;
         value = evaluatePostfixExpression(convertInfixToPostfix(infix));
     }
     return value;
 }
 
 bool InFixExpr::compareAndRelate(int l_value, int ops_index) {
-    //cout << ops[ops_index] << " Is our index" << endl;
     bool condition = false;
     if (ops_index == (ops.size() - 1)) {
         return computeRelation(l_value, exprs[ops_index + 1]->eval(), ops[ops_index]);
@@ -463,7 +454,6 @@ bool InFixExpr::compareAndRelate(int l_value, int ops_index) {
             }
         }
         if(!condition){
-            //cout << infix << endl;
             int value = evaluatePostfixExpression(convertInfixToPostfix(infix));
             return computeRelation(l_value, value, ops[ops_index]);
         } else{
@@ -495,7 +485,7 @@ string InFixExpr::toString() {
     for (int i = 0; i < exprs.size(); i++) {
         inFixExpr += exprs[i]->toString();
         if (i < ops.size()) {
-            inFixExpr += ops[i];
+            inFixExpr += " " + ops[i] + " " ;
         }
     }
     return inFixExpr;
@@ -505,7 +495,7 @@ class Compiler{
 private:
     //Tim wrote buildIf
     IfStmt* buildIf(){
-       // cout << "Building if" << endl;
+        cout << "Building if" << endl;
         Expr* condition = buildExpr();
         tokitr++; lexitr++;
         //Incremented to "t_loop" so further statements can be read
@@ -513,7 +503,7 @@ private:
     }
     //Michaela wrote buildWhile
     WhileStmt* buildWhile(){
-       // cout << "Building while" << endl;
+        cout << "Building while" << endl;
         Expr* condition = buildExpr();
         tokitr++; lexitr++;
         //Incremented to "t_loop" so further statements can be read
@@ -521,17 +511,20 @@ private:
     }
     //Stmt* buildStmt(); -- Not used
     //Tim wrote buildAssign
-    AssignStmt* buildAssign(){
-        //cout << "Building assignstmt" << endl;
+    AssignStmt* buildAssign(string var){
+        //cout << *tokitr << "  "  << *lexitr << endl;
+        cout << "Building assignstmt" << endl;
         Expr* assign = buildExpr();
-        string var = *lexitr;
-        tokitr++; lexitr++;
+        //cout << *tokitr << " " << *lexitr << endl;
+        //tokitr++; lexitr++;
+        //cout << *tokitr << " " << *lexitr << endl;
+        //cout << assign->toString() << endl;
         //Incremented to "t_loop" so further statements can be read
         return new AssignStmt(var, assign);
     }
     //Michaela wrote buildInput
     InputStmt* buildInput(){
-        //cout << "Building input" << endl;
+        cout << "Building input" << endl;
         string id = *lexitr;
         tokitr++; lexitr++;
         //incremented to closing paren so next instruction can be read
@@ -539,7 +532,7 @@ private:
     }
     //Michaela wrote buildOutput
     Stmt* buildOutput(){
-        //cout << "Building output" << endl;
+        cout << "Building output" << endl;
         if (*tokitr=="t_string"){
             return new StrOutStmt (*lexitr);
         }
@@ -549,24 +542,24 @@ private:
     }
     //Michaela wrote buildExpr
     Expr* buildExpr(){
-        //cout << "Building expression" << endl;
+        bool constant = false;
+        bool variable = false;
+        cout << "Building expression" << endl;
         //Assumes that iterators are pointing directly to the start of an expression-inside any parens
         vector <Expr*> exprs;
         vector <string> ops;
+        string tempValue = "";
         while (*tokitr!="s_rparen" && *tokitr!="s_semi"){
             //Analyzing a new lexeme
             if (*tokitr=="t_id"){
                 exprs.push_back(new IdExpr(*lexitr));
+                tempValue= *lexitr;
+                variable = true;
             }
-            else if (*tokitr=="t_number"){
+            else if (*tokitr=="t_number" || *tokitr=="t_true" || *tokitr=="t_false"){ //bool
                 exprs.push_back(new ConstExpr(stoi(*lexitr)));
+                constant = true;
             }
-            else if (*tokitr=="t_true"){
-        		exprs.push_back(new ConstExpr(1));
-        	}
-            else if (*tokitr=="t_false"){
-        		exprs.push_back(new ConstExpr(0));
-        	}
             else if (*tokitr=="s_plus" || *tokitr=="s_minus" || *tokitr=="s_mult" || *tokitr=="s_div" || *tokitr=="s_mod" || *tokitr=="t_and" || *tokitr=="t_or"){
                 //If the token/lexeme indicates an aritmetic operator
                 ops.push_back(*lexitr);
@@ -581,7 +574,14 @@ private:
             }
             tokitr++; lexitr++;
         }
-        return new InFixExpr(exprs, ops);;
+        if(ops.size() == 0){
+            if(constant){
+                return new ConstExpr(exprs[0]->eval());
+            }else{
+                return new IdExpr(tempValue);
+            }
+        }else
+            return new InFixExpr(exprs, ops);;
     }
     //Tim wrote populateTokenLexemes
     void populateTokenLexemes(istream& infile){
@@ -623,8 +623,9 @@ public:
         tokitr = tokens.begin();
         lexitr = lexemes.begin();
         while (tokitr!=tokens.end()){
-        	cout << *tokitr << endl;
+            //cout << *tokitr << " " << *lexitr << endl;
             if (*tokitr=="t_while"){
+                tokitr++; lexitr++;
                 tokitr++; lexitr++;
                 //Increments pointers to the start of the expression
                 open_stmts.push(insttable.size());
@@ -632,12 +633,9 @@ public:
             }
             else if (*tokitr=="t_if"){
                 tokitr++; lexitr++;
+                tokitr++; lexitr++;
                 open_stmts.push(insttable.size());
                 insttable.push_back(buildIf());
-            }
-            else if (*tokitr=="t_id"){
-                //Uses current index of lexitr so does not increment here- increments in buildAssign
-                insttable.push_back(buildAssign());
             }
             else if (*tokitr=="t_input"){
                 tokitr++; lexitr++;
@@ -650,54 +648,73 @@ public:
                 tokitr++; lexitr++;
                 tokitr++; lexitr++;
                 //Incremented to expression or string
+                //cout << *lexitr << endl;
                 insttable.push_back(buildOutput());
+                //cout << *lexitr << endl;
+            }
+            else if (*tokitr=="t_id"){
+                //Uses current index of lexitr so does not increment here-
+                // increments in buildAssign
+                string var = *lexitr;
+                tokitr++; lexitr++;
+                if(*tokitr=="s_assign"){
+                    tokitr++; lexitr++;
+                    insttable.push_back(buildAssign(var));
+                }
             }
                 //safe to assume that the final t_end is going to be tokens.end?
             else if (*tokitr=="t_end"){
+                //cout << "Almost done" << endl;
                 tokitr++; lexitr++;
-                int line = open_stmts.top();
-                open_stmts.pop();
-                if (*tokitr=="t_loop"){
-                    WhileStmt* ws = dynamic_cast<WhileStmt*>(insttable[line]);
-                    if (ws!=nullptr){
-                        ws->setTarget(insttable.size());
+                if(tokitr != tokens.end()) {
+                    int line = open_stmts.top();
+                    open_stmts.pop();
+                    if (*tokitr == "t_loop") {
+                        WhileStmt *ws = dynamic_cast<WhileStmt *>(insttable[line]);
+                        if (ws != nullptr) {
+                            ws->setTarget(insttable.size());
+                        }
+                        //Need condition for failed cast?
+                        insttable.push_back(new GoToStmt(line));
+                    } else {
+                        // t_if
+                        IfStmt *is = dynamic_cast<IfStmt *>(insttable[line]);
+                        if (is != nullptr) {
+                            is->setElseTarget(insttable.size());
+                        }
                     }
-                    //Need condition for failed cast?
-                    insttable.push_back(new GoToStmt(line));
-                }
-                else{
-                    // t_if
-                    IfStmt* is = dynamic_cast<IfStmt*>(insttable[line]);
-                    if (is!=nullptr){
-                        is->setElseTarget(insttable.size());
-                    }
+                    tokitr++; lexitr++;
                 }
             }
-            tokitr++; lexitr++;
-            //incremented to start of new instructions
+            else{
+                tokitr++; lexitr++;
+                //incremented to start of new instructions
+            }
         }
         return true;
     }
     //Tim wrote run
     void run(){ 		// executes the instruction table
+        cout << "\nRunning program" << endl;
         pc = 0;
         while(pc != insttable.size()) {
+            //cout << pc << endl;
             insttable[pc]->execute();
         }
     }
 };
 
 void dump() {
-    cout << " Printing the var table" << endl;
+    cout << "\nPrinting the var table" << endl;
     map<string, int>::iterator itr;
     for (itr = vartable.begin(); itr != vartable.end(); ++itr) {
         cout << '\t' << itr->first << "\t" << itr->second << '\n';
     }
-    cout << " Printing the instruction table" << endl;
+    cout << "\nPrinting the instruction table" << endl;
     for (int i = 0; i < insttable.size(); i++) {
         cout << insttable[i]->toString() << endl;
     }
-    cout << " Printing the Symbol table" << endl;
+    cout << "\nPrinting the Symbol table" << endl;
     map<string, string>::iterator itr2;
     for (itr2 = symboltable.begin(); itr2 != symboltable.end(); ++itr2) {
         cout << '\t' << itr2->first << "\t" << itr2->second << '\n';
@@ -821,6 +838,9 @@ int calculate(int a, int b, char operatorSign)
         return a*b;
     else if(operatorSign=='/')
         return a/b;
+    else if(operatorSign=='^')
+        return pow(a,b);
+
 }
 
 
@@ -838,11 +858,13 @@ int operatorPrecedence(char ch)
 
 }
 
+
 int main() {
-    ifstream infile("TL1.txt");
-    ifstream symbolFile("symbol1.txt");
+    ifstream infile("data2.txt");
+    ifstream symbolFile("s_tablein.txt");
     if (!infile || !symbolFile) {
         cout << "error opening input file - token/lexeme pairs" << endl;
+        exit(-1);
     }
     Compiler comp(infile, symbolFile);
     cout << comp.compile() << endl;
@@ -850,9 +872,5 @@ int main() {
     comp.run();
     return 0;
 }
-
-
-
-
 
 
