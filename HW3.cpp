@@ -71,8 +71,9 @@ class Stmt{ // statements are executed!
 private:
     string name;
 public:
+    Stmt(){}
     Stmt(string n){
-        cout << "Constructing a Stmt object" << endl;
+        //cout << "Constructing a Stmt object" << endl;
         name = n;
     }
     Stmt(Expr* e){}
@@ -84,11 +85,11 @@ public:
     string getName (){
         //pre:
         //post: name member variable is returned
-        cout << "Getting Stmt name" << endl;
+        //cout << "Getting Stmt name" << endl;
         return name;
     }
     void setName (string s){
-        cout << "Setting Stmt name" << endl;
+       // cout << "Setting Stmt name" << endl;
         //pre: the parameter is the name member variable
         //post: name has been set to s
         name = s;
@@ -113,13 +114,13 @@ public:
 //
 AssignStmt::AssignStmt(string vname, Expr *expr)
         : Stmt("s_assign") {
-    cout << "in AssignStmt copy constructor" << endl;
+    //cout << "in AssignStmt copy constructor" << endl;
     var = vname;
     p_expr = expr;
 }
 
 AssignStmt::~AssignStmt() {
-    cout << "in AssignStmt destructor" << endl;
+    //cout << "in AssignStmt destructor" << endl;
     if (p_expr != nullptr)
         delete p_expr;
 }
@@ -142,16 +143,17 @@ private:
     string var;
 public:
     InputStmt(string vname)
-            :Stmt("t_input"){
-        cout << "Constructing an InputStmt object" << endl;
+            :Stmt(){
+    	Stmt::setName("t_inpput");
+        //cout << "Constructing an InputStmt object" << endl;
         var = vname;
     }
-    ~InputStmt();
+    ~InputStmt(){}
     string toString(){
         return "Name: " + Stmt::getName() + " Variable Name: " + var;
     }
     void execute(){
-        cout << "Executing InputStmt" << endl;
+       // cout << "Executing InputStmt" << endl;
         string val;
         //Assuming I don't need to do anything else specific for this
         cout << "Enter value for of type " << symboltable[var]<< " for: " << var << endl;
@@ -184,7 +186,7 @@ public:
 
 StrOutStmt::StrOutStmt(string val)
         : Stmt("t_strout") {
-    cout << "In  StrOutStmt copy constructor" << endl;
+    //cout << "In  StrOutStmt copy constructor" << endl;
     value = val;
 }
 
@@ -205,20 +207,20 @@ private:
 public:
     ExprOutStmt(Expr* e)
             :Stmt("t_output"){
-        cout << "Constructing ExprOutStmt" << endl;
+        //cout << "Constructing ExprOutStmt" << endl;
         p_expr = e;
     }
     ~ExprOutStmt(){
-        cout << "Deconstructing ExprOutStmt" << endl;
+       // cout << "Deconstructing ExprOutStmt" << endl;
         if(p_expr != nullptr)
             delete (p_expr);
     }
     string toString(){
-        cout << "COnverting ExprOutStmt to string" << endl;
+        //cout << "COnverting ExprOutStmt to string" << endl;
         return "Name: " + Stmt::getName() + " Expression: " + p_expr->toString();
     }
     void execute(){
-        cout << "Executing ExprOutStmt" << endl;
+        //cout << "Executing ExprOutStmt" << endl;
         cout << p_expr->eval() << endl;
         pc++;
     }
@@ -244,13 +246,13 @@ public:
 
 IfStmt::IfStmt(Expr *expr)
         : Stmt("t_if") {
-    cout << "in IfStmt copy constructor" << endl;
+    //cout << "in IfStmt copy constructor" << endl;
     p_expr = expr;
     elsetarget = -1;
 }
 
 IfStmt::~IfStmt() {
-    cout << "in IfStmt destructor" << endl;
+    //cout << "in IfStmt destructor" << endl;
     if (p_expr != nullptr)
         delete p_expr;
 }
@@ -278,26 +280,26 @@ private:
 public:
     WhileStmt(Expr* e)
             :Stmt("t_while"){
-        cout << "Constructing a WhileStmt object" << endl;
+        //cout << "Constructing a WhileStmt object" << endl;
         p_expr = e;
         elsetarget = -1;
     }
     ~WhileStmt(){
-        cout << "Destructing a WhileStmt object" << endl;
+        //cout << "Destructing a WhileStmt object" << endl;
         delete(p_expr);
     }
     string toString(){
-        cout << "Converting a WhileStmt object to string" << endl;
+        //cout << "Converting a WhileStmt object to string" << endl;
         return "Name: " + Stmt::getName() + " Condition: " + p_expr->toString() + " Target: " + to_string(elsetarget);
     }
     void setTarget(int x){
         //pre: The parameter is the index of the next instruction to execute after the while loop fails its condition.
         //post: elsetarget is set to x
-        cout << "Setting elsetarget in WhileStmt" << endl;
+        //cout << "Setting elsetarget in WhileStmt" << endl;
         elsetarget = x;
     }
     void execute(){
-        cout << "Executing a WhileStmt" << endl;
+        //cout << "Executing a WhileStmt" << endl;
         //pc is set to the start of the while loop coming in
         while (p_expr->eval()){
             //Assumes that pc is incremented in eval, else increment pc here
@@ -318,17 +320,17 @@ public:
             :Stmt("t_end"){
         //pre: constructs a statement that instructs program to go to a certain instruction. Parameter is the index of that instruction in insttable
         //post: object is created
-        cout << "Constructing a GoToStmt" << endl;
+        //cout << "Constructing a GoToStmt" << endl;
         gotoline = x;
     }
-    ~GoToStmt(){cout << "Deconstructing a GoToStmt" << endl;}
+    ~GoToStmt(){}
     string toString (){
-        cout << "Converting a GoToStmt to string" << endl;
+        //cout << "Converting a GoToStmt to string" << endl;
         //Eclipse will allow concatenation with an int- Tim's compiler does not like it
         return "Name: " + Stmt::getName() + " Going to: " + to_string(gotoline);
     }
     void execute (){
-        cout << "Executing a GoToStmt" << endl;
+       // cout << "Executing a GoToStmt" << endl;
         pc = gotoline;
     }
 };
@@ -346,7 +348,7 @@ public:
 };
 
 ConstExpr::ConstExpr(int val) {
-    cout << "In  ConstExpr conversion constructor" << endl;
+   // cout << "In  ConstExpr conversion constructor" << endl;
     value = val;
 }
 
@@ -364,15 +366,15 @@ private:
     string id;
 public:
     IdExpr(string s){
-        cout << "Constructing IdExpr object" << endl;
+       // cout << "Constructing IdExpr object" << endl;
         id = s;
     }
     int eval(){
-        cout << "Evaluating IdExpr object" << endl;
+       // cout << "Evaluating IdExpr object" << endl;
         return vartable[id];
     }
     string toString(){
-        cout << "Converting IdExpr object to string" << endl;
+       // cout << "Converting IdExpr object to string" << endl;
         return "Data Type: " + symboltable[id] + " ID: " + id + " Value: " + to_string(vartable[id]);
     }
 };
@@ -388,7 +390,7 @@ public:
     };
 
     ~InFixExpr() {
-        cout << "In InFixExpr destructor" << endl;
+       // cout << "In InFixExpr destructor" << endl;
         exprs.clear();
     };
 
@@ -503,7 +505,7 @@ class Compiler{
 private:
     //Tim wrote buildIf
     IfStmt* buildIf(){
-        cout << "Building if" << endl;
+       // cout << "Building if" << endl;
         Expr* condition = buildExpr();
         tokitr++; lexitr++;
         //Incremented to "t_loop" so further statements can be read
@@ -511,7 +513,7 @@ private:
     }
     //Michaela wrote buildWhile
     WhileStmt* buildWhile(){
-        cout << "Building while" << endl;
+       // cout << "Building while" << endl;
         Expr* condition = buildExpr();
         tokitr++; lexitr++;
         //Incremented to "t_loop" so further statements can be read
@@ -520,7 +522,7 @@ private:
     //Stmt* buildStmt(); -- Not used
     //Tim wrote buildAssign
     AssignStmt* buildAssign(){
-        cout << "Building assignstmt" << endl;
+        //cout << "Building assignstmt" << endl;
         Expr* assign = buildExpr();
         string var = *lexitr;
         tokitr++; lexitr++;
@@ -529,7 +531,7 @@ private:
     }
     //Michaela wrote buildInput
     InputStmt* buildInput(){
-        cout << "Building input" << endl;
+        //cout << "Building input" << endl;
         string id = *lexitr;
         tokitr++; lexitr++;
         //incremented to closing paren so next instruction can be read
@@ -537,7 +539,7 @@ private:
     }
     //Michaela wrote buildOutput
     Stmt* buildOutput(){
-        cout << "Building output" << endl;
+        //cout << "Building output" << endl;
         if (*tokitr=="t_string"){
             return new StrOutStmt (*lexitr);
         }
@@ -547,7 +549,7 @@ private:
     }
     //Michaela wrote buildExpr
     Expr* buildExpr(){
-        cout << "Building expression" << endl;
+        //cout << "Building expression" << endl;
         //Assumes that iterators are pointing directly to the start of an expression-inside any parens
         vector <Expr*> exprs;
         vector <string> ops;
@@ -556,9 +558,15 @@ private:
             if (*tokitr=="t_id"){
                 exprs.push_back(new IdExpr(*lexitr));
             }
-            else if (*tokitr=="t_number" || *tokitr=="t_true" || *tokitr=="t_false"){ //bool
+            else if (*tokitr=="t_number"){
                 exprs.push_back(new ConstExpr(stoi(*lexitr)));
             }
+            else if (*tokitr=="t_true"){
+        		exprs.push_back(new ConstExpr(1));
+        	}
+            else if (*tokitr=="t_false"){
+        		exprs.push_back(new ConstExpr(0));
+        	}
             else if (*tokitr=="s_plus" || *tokitr=="s_minus" || *tokitr=="s_mult" || *tokitr=="s_div" || *tokitr=="s_mod" || *tokitr=="t_and" || *tokitr=="t_or"){
                 //If the token/lexeme indicates an aritmetic operator
                 ops.push_back(*lexitr);
@@ -615,6 +623,7 @@ public:
         tokitr = tokens.begin();
         lexitr = lexemes.begin();
         while (tokitr!=tokens.end()){
+        	cout << *tokitr << endl;
             if (*tokitr=="t_while"){
                 tokitr++; lexitr++;
                 //Increments pointers to the start of the expression
@@ -663,9 +672,9 @@ public:
                         is->setElseTarget(insttable.size());
                     }
                 }
-                tokitr++; lexitr++;
-                //incremented to start of new instructions
             }
+            tokitr++; lexitr++;
+            //incremented to start of new instructions
         }
         return true;
     }
@@ -694,22 +703,6 @@ void dump() {
         cout << '\t' << itr2->first << "\t" << itr2->second << '\n';
     }
 }
-
-
-
-int main() {
-    ifstream infile("data.txt");
-    ifstream symbolFile("s_tablein.txt");
-    if (!infile || !symbolFile) {
-        cout << "error opening input file - token/lexeme pairs" << endl;
-    }
-    Compiler comp(infile, symbolFile);
-    cout << comp.compile() << endl;
-    dump();
-    comp.run();
-    return 0;
-}
-
 
 /*
     Infix notation to Postfix notation conversion.
@@ -828,9 +821,6 @@ int calculate(int a, int b, char operatorSign)
         return a*b;
     else if(operatorSign=='/')
         return a/b;
-    else if(operatorSign=='^')
-        return pow(a,b);
-
 }
 
 
@@ -847,6 +837,22 @@ int operatorPrecedence(char ch)
         return 0; //works for operands
 
 }
+
+int main() {
+    ifstream infile("TL1.txt");
+    ifstream symbolFile("symbol1.txt");
+    if (!infile || !symbolFile) {
+        cout << "error opening input file - token/lexeme pairs" << endl;
+    }
+    Compiler comp(infile, symbolFile);
+    cout << comp.compile() << endl;
+    dump();
+    comp.run();
+    return 0;
+}
+
+
+
 
 
 
